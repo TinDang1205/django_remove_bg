@@ -22,7 +22,7 @@ def send_files(request):
         Uploadfile(name=str(timestamp), my_files=myfile).save()
         path = get_path(timestamp)
         name = get_my_files(timestamp)
-        if name.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+        if name.lower().endswith(('.png', '.jpg', '.jpeg')):
             unsafe = check_nude(path)
             if unsafe * 100 > 50:
                 return invalid_photo(path)
