@@ -22,21 +22,14 @@ def send_files(request):
         Uploadfile(name=str(timestamp), my_files=myfile).save()
         path = get_path(timestamp)
         name = get_my_files(timestamp)
-        unsafe = check_nude(path)
-        if unsafe * 100 > 50:
-            data = {
-                'message': 'Invalid photo',
-                'status': '200'
-            }
-            return HttpResponse(json.dumps(data), content_type='application/json')
+        if name.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            unsafe = check_nude(path)
+            if unsafe * 100 > 50:
+                return invalid_photo(path)
+            else:
+                return success_photo(name)
         else:
-            image = remove_image(name)
-            data = {
-                'message': 'Success',
-                'status': '200',
-                'image': str(settings.HOST + image)
-            }
-        return HttpResponse(json.dumps(data), content_type='application/json')
+            return invalid_photo(path)
 
 
 def get_path(name):
@@ -49,3 +42,22 @@ def get_path(name):
 def get_my_files(name):
     file = Uploadfile.objects.get(name=str(name))
     return str(file.my_files)
+
+
+def invalid_photo(path):
+    data = {
+        'message': 'Invalid photo',
+        'status': '400'
+    }
+    os.remove(path)
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+def success_photo(name):
+    image = remove_image(name)
+    data = {
+        'message': 'Success',
+        'status': '200',
+        'image': str(settings.HOST + image)
+    }
+    return HttpResponse(json.dumps(data), content_type='application/json')
